@@ -4,6 +4,8 @@ from deap import base, algorithms
 from deap import creator
 from deap import tools
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 ONE_MAX_LENGHT = 100  # Длина битовой строки, которую бу отимизировать
@@ -40,22 +42,27 @@ for individual, fitness_value in zip(population, fitness_values):
 max_fitness_values = []
 mean_fitness_values = []
 
-
 toolbox.register("evaluate", one_max_fitness)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("mate", tools.cxOnePoint)
 toolbox.register("mutate", tools.mutFlipBit, indpb=1.0/ONE_MAX_LENGHT)
 
+stats = tools.Statistics(lambda ind: ind.fitness.values)
+stats.register("max", np.max)
+stats.register("avg", np.mean)
+
 population, logbook = algorithms.eaSimple(population, toolbox,
                                           cxpb=P_CROSSOVER,
                                           mutpb=P_MUTATION,
                                           ngen=MAX_GENERATION,
+                                          stats=stats,
                                           verbose=True)
 
+max_fitness_values, mean_fitness_values = logbook.select("max", "avg")
 
-# plt.plot(max_fitness_values, color='red')
-# plt.plot(mean_fitness_values, color='green')
-# plt.xlabel("Поколение")
-# plt.ylabel("Макс/средняя приспособленность")
-# plt.title("Зависимость максимальной и средней приспособленности от поколения")
-# plt.show()
+plt.plot(max_fitness_values, color='red')
+plt.plot(mean_fitness_values, color='green')
+plt.xlabel("Поколение")
+plt.ylabel("Макс/средняя приспособленность")
+plt.title("Зависимость максимальной и средней приспособленности от поколения")
+plt.show()
